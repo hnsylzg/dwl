@@ -22,7 +22,7 @@ static int log_level = WLR_ERROR;
 
 /* Autostart */
 static const char *const autostart[] = {
-        "wbg", "/path/to/your/image", NULL,
+        "/home/lzg/.config/dwl/autostart.sh",
         NULL /* terminate */
 };
 
@@ -114,7 +114,8 @@ LIBINPUT_CONFIG_TAP_MAP_LMR -- 1/2/3 finger tap maps to left/middle/right
 static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TAP_MAP_LRM;
 
 /* If you want to use the windows key for MODKEY, use WLR_MODIFIER_LOGO */
-#define MODKEY WLR_MODIFIER_ALT
+// #define MODKEY WLR_MODIFIER_ALT
+#define MODKEY WLR_MODIFIER_LOGO
 
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
@@ -127,29 +128,43 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[] = { "foot", NULL };
-static const char *menucmd[] = { "wmenu-run", NULL };
+// static const char *menucmd[] = { "wmenu-run", NULL };
+static const char *menucmd[] = { "rofi", "-modi", "drun", "-show", "drun", "-config", "~/.config/rofi/rofidmenu.rasi", NULL };
+static const char *up_vol[]   = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+10%",   NULL };
+static const char *down_vol[] = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-10%",   NULL };
+static const char *mute_vol[] = { "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL };
 
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
 	/* modifier                  key                 function        argument */
-	{ MODKEY,                    XKB_KEY_p,          spawn,          {.v = menucmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,     spawn,          {.v = termcmd} },
-	{ MODKEY,                    XKB_KEY_b,          togglebar,      {0} },
+	{ MODKEY,                    XKB_KEY_d,          spawn,          {.v = menucmd} },
+	{ MODKEY,		                 XKB_KEY_Return,     spawn,          {.v = termcmd} },
+	{ MODKEY,                    XKB_KEY_x,          spawn,          SHCMD("thunar") },
+	{ MODKEY,                    XKB_KEY_b,          spawn,          SHCMD("google-chrome-stable") },
+  { 0,                         XKB_KEY_Print,      spawn,          SHCMD("/home/lzg/.config/dwl/scripts/screenshot.sh") },
+  { WLR_MODIFIER_SHIFT,        XKB_KEY_Print,      spawn,          SHCMD("/home/lzg/.config/dwl/scripts/screenshotsel.sh") },
+  { MODKEY,                    XKB_KEY_r,          spawn,          SHCMD("/home/lzg/.config/waybar/recorder.sh -a") },
+  { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_R,          spawn,          SHCMD("/home/lzg/.config/waybar/recorder.sh") },
+	{ MODKEY,                    XKB_KEY_Escape,     spawn,          SHCMD("killall -s SIGINT wf-recorder") },
+  { 0,                         XKB_KEY_XF86AudioMute, spawn,       {.v = mute_vol } },
+  { 0,                         XKB_KEY_XF86AudioLowerVolume, spawn,{.v = down_vol } },
+  { 0,                         XKB_KEY_XF86AudioRaiseVolume, spawn,{.v = up_vol } },
+	{ WLR_MODIFIER_CTRL,         XKB_KEY_Escape,     togglebar,      {0} },
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
 	{ MODKEY,                    XKB_KEY_i,          incnmaster,     {.i = +1} },
-	{ MODKEY,                    XKB_KEY_d,          incnmaster,     {.i = -1} },
+	{ MODKEY,                    XKB_KEY_o,          incnmaster,     {.i = -1} },
 	{ MODKEY,                    XKB_KEY_h,          setmfact,       {.f = -0.05f} },
 	{ MODKEY,                    XKB_KEY_l,          setmfact,       {.f = +0.05f} },
-	{ MODKEY,                    XKB_KEY_Return,     zoom,           {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,     zoom,           {0} },
 	{ MODKEY,                    XKB_KEY_Tab,        view,           {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,          killclient,     {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Q,          killclient,     {0} },
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_f,          setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                    XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
 	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
-	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
+	{ MODKEY,                    XKB_KEY_e,         togglefullscreen,{0} },
 	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
 	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
@@ -165,7 +180,13 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                  6),
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Q,          quit,           {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_E,          spawn,          SHCMD("/home/lzg/.config/dwl/scripts/powermenu.sh") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_space,      spawn,          SHCMD("playerctl play-pause") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_Return,     spawn,          SHCMD("playerctl stop") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_Left,       spawn,          SHCMD("playerctl previous") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_Right,      spawn,          SHCMD("playerctl next") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_Up,         spawn,          SHCMD("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+") },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_Down,       spawn,          SHCMD("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
